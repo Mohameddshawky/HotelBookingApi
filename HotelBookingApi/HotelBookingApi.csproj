@@ -14,4 +14,9 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\HotelBookingApi.Application\HotelBookingApi.Application.csproj" />
+    <ProjectReference Include="..\HotelBookingApi.Infrastructure\HotelBookingApi.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
