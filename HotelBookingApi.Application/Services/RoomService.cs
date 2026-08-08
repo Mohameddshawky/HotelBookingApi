@@ -1,0 +1,63 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoMapper;
+using HotelBookingApi.Domain.Entities;
+using HotelBookingApi.Domain.Enums;
+using HotelBookingApi.Application.DTOs;
+using HotelBookingApi.Application.Interfaces.Repositories;
+using HotelBookingApi.Application.Interfaces.Services;
+
+namespace HotelBookingApi.Application.Services;
+
+public class RoomService : IRoomService
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+
+    public RoomService(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
+
+    public async Task<IEnumerable<RoomDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var rooms = await _unitOfWork.Rooms.GetAllAsync();
+        return _mapper.Map<IEnumerable<RoomDto>>(rooms);
+    }
+
+    public async Task<RoomDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var room = await _unitOfWork.Rooms.GetByIdAsync(id);
+        return room == null ? null : _mapper.Map<RoomDto>(room);
+    }
+
+    public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut, CancellationToken cancellationToken = default)
+    {
+        var availableRooms = await _unitOfWork.Rooms.GetAvailableRoomsAsync(checkIn, checkOut);
+        return _mapper.Map<IEnumerable<AvailableRoomDto>>(availableRooms);
+    }
+
+    public async Task<Guid> CreateAsync(CreateOrUpdateRoomDto dto, CancellationToken cancellationToken = default)
+    {
+        var existingRoom = await _unitOfWork.Rooms.GetByRoomNumberAsync(dto.Number);
+        if (existingRoom != null) throw new Exception("Room number must be unique");
+
+        var room = _mapper.Map<Room>(dto);
+        await _unitOfWork.Rooms.AddAsync(room);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return room.Id;
+    }
+
+    public async Task DeactivateAsync(Guid roomId, CancellationToken cancellationToken = default)
+    {
+        var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
+        if (room == null) throw new Exception("Room not found");
+
+        room.Status = RoomStatus.Maintenance;
+        _unitOfWork.Rooms.Update(room);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+}
