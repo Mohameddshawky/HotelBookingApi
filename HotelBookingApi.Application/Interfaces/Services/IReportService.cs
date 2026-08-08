@@ -9,8 +9,8 @@ namespace HotelBookingApi.Application.Interfaces.Services;
 
 public interface IReportService
 {
-    Task<IQueryable<AvailableRoomDto>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut, CancellationToken cancellationToken = default);
+    Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut, CancellationToken cancellationToken = default);
     Task<OccupancyReportDto> GetOccupancyReportAsync(CancellationToken cancellationToken = default);
-    Task<IQueryable<RoomTypeRatingReportDto>> GetRoomTypeRatingsAsync(CancellationToken cancellationToken = default);
-    Task<IQueryable<BookingHistoryDto>> GetGuestBookingHistoryAsync(Guid guestId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<RoomTypeRatingReportDto>> GetRoomTypeRatingsAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<BookingHistoryDto>> GetGuestBookingHistoryAsync(Guid guestId, CancellationToken cancellationToken = default);
 }

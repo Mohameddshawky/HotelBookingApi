@@ -8,7 +8,7 @@ namespace HotelBookingApi.Application.Interfaces.Repositories;
 
 public interface IRoomRepository : IGenericRepository<Room>
 {
-    Task<IQueryable<Room>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut);
+    Task<IEnumerable<Room>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut);
     Task<Room?> GetByRoomNumberAsync(string roomNumber);
-    Task<IQueryable<Room>> GetRoomsByRoomTypeIdAsync(Guid roomTypeId);
+    Task<IEnumerable<Room>> GetRoomsByRoomTypeIdAsync(Guid roomTypeId);
 }

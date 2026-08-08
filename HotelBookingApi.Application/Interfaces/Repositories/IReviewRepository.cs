@@ -9,6 +9,6 @@ namespace HotelBookingApi.Application.Interfaces.Repositories;
 public interface IReviewRepository : IGenericRepository<Review>
 {
     Task<bool> ExistsForBookingAsync(Guid bookingId);
-    Task<IQueryable<Review>> GetReviewsByRoomTypeIdAsync(Guid roomTypeId);
+    Task<IEnumerable<Review>> GetReviewsByRoomTypeIdAsync(Guid roomTypeId);
     Task<Review?> GetByBookingIdAsync(Guid bookingId);
 }
