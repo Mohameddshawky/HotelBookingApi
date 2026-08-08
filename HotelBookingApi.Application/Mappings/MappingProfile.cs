@@ -10,25 +10,29 @@ public class MappingProfile : Profile
     {
         // RoomType mappings
         CreateMap<RoomType, RoomTypeDto>();
-        CreateMap<SaveRoomTypeDto, RoomType>();
+        CreateMap<CreateOrUpdateRoomTypeDto, RoomType>();
 
         // Room mappings
         CreateMap<Room, RoomDto>();
         CreateMap<Room, AvailableRoomDto>()
             .ForMember(dest => dest.PricePerNight, opt => opt.MapFrom(src => src.RoomType != null ? src.RoomType.PricePerNight : 0));
-        CreateMap<SaveRoomDto, Room>();
+        CreateMap<CreateOrUpdateRoomDto, Room>();
 
         // Guest mappings
         CreateMap<Guest, GuestDto>();
-        CreateMap<SaveGuestDto, Guest>();
+        CreateMap<CreateOrUpdateGuestDto, Guest>();
 
         // Booking mappings
         CreateMap<Booking, BookingDetailsDto>();
-        CreateMap<SaveBookingDto, Booking>();
+        CreateMap<CreateOrUpdateBookingDto, Booking>();
         CreateMap<Booking, BookingHistoryDto>();
 
         // Review mappings
         CreateMap<Review, ReviewDto>();
-        CreateMap<SaveReviewDto, Review>();
+        CreateMap<CreateOrUpdateReviewDto, Review>();
+
+        // Amenity mappings
+        CreateMap<Amenity, AmenityDto>();
+        CreateMap<CreateOrUpdateAmenityDto, Amenity>();
     }
 }

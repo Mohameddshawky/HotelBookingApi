@@ -10,6 +10,7 @@ public interface IUnitOfWork
     IGuestRepository Guests { get; }
     IBookingRepository Bookings { get; }
     IReviewRepository Reviews { get; }
+    IAmenityRepository Amenities { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -4,7 +4,7 @@ using HotelBookingApi.Domain.Enums;
 
 namespace HotelBookingApi.Application.DTOs;
 
-public class SaveRoomDto
+public class CreateOrUpdateRoomDto
 {
     [Required]
     [StringLength(20)]

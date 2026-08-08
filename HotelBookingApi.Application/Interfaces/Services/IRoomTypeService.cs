@@ -11,6 +11,6 @@ public interface IRoomTypeService
 {
     Task<IEnumerable<RoomTypeDto>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<RoomTypeDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<Guid> CreateAsync(SaveRoomTypeDto dto, CancellationToken cancellationToken = default);
-    Task UpdateAsync(Guid id, SaveRoomTypeDto dto, CancellationToken cancellationToken = default);
+    Task<Guid> CreateAsync(CreateOrUpdateRoomTypeDto dto, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Guid id, CreateOrUpdateRoomTypeDto dto, CancellationToken cancellationToken = default);
 }

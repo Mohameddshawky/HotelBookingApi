@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HotelBookingApi.Application.DTOs;
 
-public class SaveRoomTypeDto
+public class CreateOrUpdateRoomTypeDto
 {
     [Required]
     [StringLength(100)]

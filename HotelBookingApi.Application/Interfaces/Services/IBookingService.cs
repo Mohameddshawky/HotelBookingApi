@@ -9,7 +9,7 @@ namespace HotelBookingApi.Application.Interfaces.Services;
 
 public interface IBookingService
 {
-    Task<BookingDetailsDto> CreateAsync(SaveBookingDto dto, CancellationToken cancellationToken = default);
+    Task<BookingDetailsDto> CreateAsync(CreateOrUpdateBookingDto dto, CancellationToken cancellationToken = default);
     Task<BookingDetailsDto?> GetByIdAsync(Guid bookingId, CancellationToken cancellationToken = default);
     Task<IEnumerable<BookingHistoryDto>> GetGuestBookingsAsync(Guid guestId, CancellationToken cancellationToken = default);
     Task ConfirmAsync(Guid bookingId, CancellationToken cancellationToken = default);

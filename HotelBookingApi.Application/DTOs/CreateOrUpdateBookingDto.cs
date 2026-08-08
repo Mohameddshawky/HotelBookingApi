@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HotelBookingApi.Application.DTOs;
 
-public class SaveBookingDto
+public class CreateOrUpdateBookingDto
 {
     [Required]
     public Guid GuestId { get; set; }

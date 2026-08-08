@@ -11,7 +11,7 @@ public interface IGuestService
 {
     Task<GuestDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GuestDto?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
-    Task<Guid> CreateAsync(SaveGuestDto dto, CancellationToken cancellationToken = default);
-    Task UpdateAsync(Guid id, SaveGuestDto dto, CancellationToken cancellationToken = default);
+    Task<Guid> CreateAsync(CreateOrUpdateGuestDto dto, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Guid id, CreateOrUpdateGuestDto dto, CancellationToken cancellationToken = default);
     Task<IEnumerable<BookingHistoryDto>> GetBookingHistoryAsync(Guid guestId, CancellationToken cancellationToken = default);
 }
