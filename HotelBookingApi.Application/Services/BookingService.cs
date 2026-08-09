@@ -9,6 +9,7 @@ using HotelBookingApi.Application.DTOs;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Interfaces.Services;
 using HotelBookingApi.Domain.Enums;
+using System.Data;
 
 namespace HotelBookingApi.Application.Services;
 
@@ -26,7 +27,7 @@ public class BookingService : IBookingService
     public async Task<BookingDetailsDto> CreateAsync(CreateOrUpdateBookingDto dto, CancellationToken cancellationToken = default)
     {
         // ATOMIC UPDATE FOR CREATE BOOKING
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
         try
         {
             var isOverlapping = await _unitOfWork.Bookings.HasOverlappingBookingAsync(dto.RoomId, dto.CheckInDate, dto.CheckOutDate);

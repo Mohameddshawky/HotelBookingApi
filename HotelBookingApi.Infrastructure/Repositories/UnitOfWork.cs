@@ -1,9 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Infrastructure.Data;
+using System.Data;
 
 namespace HotelBookingApi.Infrastructure.Repositories;
 
@@ -42,12 +44,12 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         return await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.Serializable, CancellationToken cancellationToken = default)
     {
         if (_currentTransaction != null)
             return;
 
-        _currentTransaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        _currentTransaction = await _context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
     }
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
