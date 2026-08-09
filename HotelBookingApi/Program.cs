@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using HotelBookingApi.Domain.Entities;
 using HotelBookingApi.Infrastructure.Services;
+using HotelBookingApi.Middlewares;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -75,6 +77,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Seed Default Roles and Admin User
 using (var scope = app.Services.CreateScope())
