@@ -18,7 +18,6 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
 
     public async Task<IEnumerable<Room>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut)
     {
-        // A room is available if its status is 'Available' and it has no overlapping non-cancelled bookings.
         return await _dbSet
             .Include(r => r.RoomType)
             .AsNoTracking()
