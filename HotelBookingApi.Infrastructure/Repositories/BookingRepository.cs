@@ -16,14 +16,10 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
     {
     }
 
-    public async Task<bool> HasOverlappingBookingAsync(Guid roomId, DateTime checkIn, DateTime checkOut, Guid? excludedBookingId = null)
+    public async Task<bool> HasOverlappingBookingAsync(Guid roomId, DateTime checkIn, DateTime checkOut)
     {
         var query = _dbSet.AsQueryable();
         
-        if (excludedBookingId.HasValue)
-        {
-            query = query.Where(b => b.Id != excludedBookingId.Value);
-        }
 
         return await query.AnyAsync(b => b.RoomId == roomId && 
                                          b.Status != BookingStatus.Cancelled &&

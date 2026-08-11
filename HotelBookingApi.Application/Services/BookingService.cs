@@ -114,7 +114,6 @@ public class BookingService : IBookingService
         var booking = await _unitOfWork.Bookings.GetByIdAsync(bookingId);
         if (booking == null) throw new Exception("Booking not found");
 
-        // The state pattern requires the Room reference to be loaded to update Room.Status
         var room = await _unitOfWork.Rooms.GetByIdAsync(booking.RoomId);
         if (room != null)
         {

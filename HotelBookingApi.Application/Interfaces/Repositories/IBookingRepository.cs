@@ -8,7 +8,7 @@ namespace HotelBookingApi.Application.Interfaces.Repositories;
 
 public interface IBookingRepository : IGenericRepository<Booking>
 {
-    Task<bool> HasOverlappingBookingAsync(Guid roomId, DateTime checkIn, DateTime checkOut, Guid? excludedBookingId = null);
+    Task<bool> HasOverlappingBookingAsync(Guid roomId, DateTime checkIn, DateTime checkOut);
     Task<IEnumerable<Booking>> GetBookingsByGuestIdAsync(Guid guestId);
     Task<IEnumerable<Booking>> GetActiveBookingsAsync();
     Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(Guid roomId);
