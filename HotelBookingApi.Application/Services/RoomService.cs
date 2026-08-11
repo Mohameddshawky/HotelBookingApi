@@ -22,10 +22,17 @@ public class RoomService : IRoomService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<RoomDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<RoomDto>> GetAllAsync(int pageNumber, int pageSize, Guid? roomTypeId = null, CancellationToken cancellationToken = default)
     {
-        var rooms = await _unitOfWork.Rooms.GetAllAsync();
-        return _mapper.Map<IEnumerable<RoomDto>>(rooms);
+        var (items, totalCount) = await _unitOfWork.Rooms.GetPagedRoomsAsync(pageNumber, pageSize, roomTypeId);
+        
+        return new PagedResult<RoomDto>
+        {
+            Items = _mapper.Map<IEnumerable<RoomDto>>(items),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
 
     public async Task<RoomDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

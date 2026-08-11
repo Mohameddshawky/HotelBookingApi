@@ -36,4 +36,22 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
     {
         return await _dbSet.AsNoTracking().Where(r => r.RoomTypeId == roomTypeId).ToListAsync();
     }
+
+    public async Task<(IEnumerable<Room> Items, int TotalCount)> GetPagedRoomsAsync(int pageNumber, int pageSize, Guid? roomTypeId = null)
+    {
+        var query = _dbSet.Include(r => r.RoomType).AsNoTracking();
+
+        if (roomTypeId.HasValue)
+        {
+            query = query.Where(r => r.RoomTypeId == roomTypeId.Value);
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
 }
