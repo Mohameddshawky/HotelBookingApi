@@ -13,6 +13,4 @@ public class CreateOrUpdateRoomDto
     [Required]
     public Guid RoomTypeId { get; set; }
 
-    [Required]
-    public RoomStatus Status { get; set; }
 }

@@ -52,7 +52,7 @@ public class ExceptionMiddleware
         {
             StatusCode = context.Response.StatusCode,
             Message = exception.Message,
-            Details = env.IsDevelopment() ? exception.StackTrace?.ToString() : "Internal Server Error"
+            Details = env.IsDevelopment() ? exception.InnerException?.Message : null
         };
 
         // For generic unhandled exceptions in production, don't leak the exact error message

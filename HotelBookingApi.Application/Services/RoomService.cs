@@ -53,6 +53,7 @@ public class RoomService : IRoomService
         if (existingRoom != null) throw new Exception("Room number must be unique");
 
         var room = _mapper.Map<Room>(dto);
+        room.Status = RoomStatus.Available;
         await _unitOfWork.Rooms.AddAsync(room);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return room.Id;
