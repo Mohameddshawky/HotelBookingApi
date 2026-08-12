@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"vite\" \"dotnet run --project ../HotelBookingApi/HotelBookingApi.csproj\"",
+    "start-frontend": "vite",
+    "start-backend": "dotnet run --project ../HotelBookingApi/HotelBookingApi.csproj",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
@@ -20,6 +22,7 @@
     "@types/react-dom": "^18.2.21",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
+    "concurrently": "^10.0.4",
     "postcss": "^8.4.38",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.2.2",
