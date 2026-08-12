@@ -26,6 +26,14 @@ public class BookingsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
+    [HttpGet]
+    [Authorize(Roles = "Staff")]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        var result = await _bookingService.GetAllAsync(cancellationToken);
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
@@ -40,6 +48,13 @@ public class BookingsController : ControllerBase
         var result = await _bookingService.GetGuestBookingsAsync(guestId, cancellationToken);
         return Ok(result);
     }
+    [HttpGet("guest/by-email/{email}")]
+    public async Task<IActionResult> GetGuestBookingsByEmail(string email, CancellationToken cancellationToken)
+    {
+        var result = await _bookingService.GetGuestBookingsByEmailAsync(email, cancellationToken);
+        return Ok(result);
+    }
+    
     [Authorize(Roles = "Staff")]
 
     [HttpPut("{id}/confirm")]

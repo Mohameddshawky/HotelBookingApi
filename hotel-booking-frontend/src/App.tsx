@@ -32,6 +32,7 @@ function App() {
             <Route path="room-types" element={<RoomTypesList />} />
             <Route path="reviews" element={<ReviewsList />} />
             <Route path="reviews/new" element={<ReviewForm />} />
+            <Route path="bookings" element={<BookingsList />} />
             <Route path="bookings/new" element={<BookingForm />} />
             
             <Route element={<ProtectedRoute />}>
@@ -41,7 +42,6 @@ function App() {
               <Route path="rooms/new" element={<RoomForm />} />
               <Route path="guests" element={<GuestsList />} />
               <Route path="guests/:id" element={<GuestForm />} />
-              <Route path="bookings" element={<BookingsList />} />
               <Route path="reports" element={<Dashboard />} />
               {/* Other CRUD routes will go here */}
             </Route>

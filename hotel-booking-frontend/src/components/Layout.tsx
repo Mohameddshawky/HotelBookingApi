@@ -29,7 +29,7 @@ export default function Layout() {
     { name: 'Room Types', path: '/room-types', icon: BedDouble, public: true },
     { name: 'Amenities', path: '/amenities', icon: Coffee, public: true },
     { name: 'Guests', path: '/guests', icon: Users, public: false },
-    { name: 'Bookings', path: '/bookings', icon: CalendarRange, public: false },
+    { name: 'Bookings', path: '/bookings', icon: CalendarRange, public: true },
     { name: 'Reviews', path: '/reviews', icon: Star, public: true },
     { name: 'Reports', path: '/reports', icon: BarChart, public: false },
   ];

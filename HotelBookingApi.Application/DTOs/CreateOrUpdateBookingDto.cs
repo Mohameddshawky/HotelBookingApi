@@ -6,7 +6,17 @@ namespace HotelBookingApi.Application.DTOs;
 public class CreateOrUpdateBookingDto
 {
     [Required]
-    public Guid GuestId { get; set; }
+    [EmailAddress]
+    public string GuestEmail { get; set; } = string.Empty;
+
+    [Required]
+    public string GuestFirstName { get; set; } = string.Empty;
+
+    [Required]
+    public string GuestLastName { get; set; } = string.Empty;
+
+    [Required]
+    public string GuestPhone { get; set; } = string.Empty;
 
     [Required]
     public Guid RoomId { get; set; }

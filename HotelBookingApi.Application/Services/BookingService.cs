@@ -42,8 +42,28 @@ public class BookingService : IBookingService
                 throw new Exception("Room is not available.");
             }
 
-            var booking = _mapper.Map<Booking>(dto);
-            booking.Status = BookingStatus.Pending;
+            var guest = await _unitOfWork.Guests.GetByEmailAsync(dto.GuestEmail);
+            if (guest == null)
+            {
+                guest = new Guest
+                {
+                    FullName = $"{dto.GuestFirstName} {dto.GuestLastName}".Trim(),
+                    Email = dto.GuestEmail,
+                    PhoneNumber = dto.GuestPhone
+                };
+                await _unitOfWork.Guests.AddAsync(guest);
+                // Save changes to get the generated Guest Id
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
+            var booking = new Booking
+            {
+                GuestId = guest.Id,
+                RoomId = dto.RoomId,
+                CheckInDate = dto.CheckInDate,
+                CheckOutDate = dto.CheckOutDate,
+                Status = BookingStatus.Pending
+            };
             
             // Assuming RoomType is loaded to get price, but since we map price from RoomType we might need to load it
             var roomType = await _unitOfWork.RoomTypes.GetByIdAsync(room.RoomTypeId);
@@ -71,9 +91,24 @@ public class BookingService : IBookingService
         return booking == null ? null : _mapper.Map<BookingDetailsDto>(booking);
     }
 
+    public async Task<IEnumerable<BookingHistoryDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var bookings = await _unitOfWork.Bookings.GetAllAsync();
+        return _mapper.Map<IEnumerable<BookingHistoryDto>>(bookings);
+    }
+
     public async Task<IEnumerable<BookingHistoryDto>> GetGuestBookingsAsync(Guid guestId, CancellationToken cancellationToken = default)
     {
         var bookings = await _unitOfWork.Bookings.GetBookingsByGuestIdAsync(guestId);
+        return _mapper.Map<IEnumerable<BookingHistoryDto>>(bookings);
+    }
+
+    public async Task<IEnumerable<BookingHistoryDto>> GetGuestBookingsByEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        var guest = await _unitOfWork.Guests.GetByEmailAsync(email);
+        if (guest == null) return Enumerable.Empty<BookingHistoryDto>();
+
+        var bookings = await _unitOfWork.Bookings.GetBookingsByGuestIdAsync(guest.Id);
         return _mapper.Map<IEnumerable<BookingHistoryDto>>(bookings);
     }
 
