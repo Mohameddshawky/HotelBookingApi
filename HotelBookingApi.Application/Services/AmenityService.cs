@@ -7,6 +7,7 @@ using HotelBookingApi.Domain.Entities;
 using HotelBookingApi.Application.DTOs;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Interfaces.Services;
+using HotelBookingApi.Domain.Exceptions;
 
 namespace HotelBookingApi.Application.Services;
 
@@ -44,7 +45,7 @@ public class AmenityService : IAmenityService
     public async Task UpdateAsync(Guid id, CreateOrUpdateAmenityDto dto, CancellationToken cancellationToken = default)
     {
         var amenity = await _unitOfWork.Amenities.GetByIdAsync(id);
-        if (amenity == null) throw new Exception("Amenity not found");
+        if (amenity == null) throw new NotFoundException("Amenity not found");
 
         _mapper.Map(dto, amenity);
         _unitOfWork.Amenities.Update(amenity);
@@ -54,7 +55,7 @@ public class AmenityService : IAmenityService
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var amenity = await _unitOfWork.Amenities.GetByIdAsync(id);
-        if (amenity == null) throw new Exception("Amenity not found");
+        if (amenity == null) throw new NotFoundException("Amenity not found");
 
         _unitOfWork.Amenities.Delete(amenity);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

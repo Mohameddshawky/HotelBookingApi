@@ -1,13 +1,14 @@
+using AutoMapper;
+using HotelBookingApi.Application.DTOs;
+using HotelBookingApi.Application.Interfaces.Repositories;
+using HotelBookingApi.Application.Interfaces.Services;
+using HotelBookingApi.Domain.Entities;
+using HotelBookingApi.Domain.Enums;
+using HotelBookingApi.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using HotelBookingApi.Domain.Entities;
-using HotelBookingApi.Domain.Enums;
-using HotelBookingApi.Application.DTOs;
-using HotelBookingApi.Application.Interfaces.Repositories;
-using HotelBookingApi.Application.Interfaces.Services;
 
 namespace HotelBookingApi.Application.Services;
 
@@ -62,7 +63,7 @@ public class RoomService : IRoomService
     public async Task DeactivateAsync(Guid roomId, CancellationToken cancellationToken = default)
     {
         var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
-        if (room == null) throw new Exception("Room not found");
+        if (room == null) throw new NotFoundException("Room not found");
 
         room.Status = RoomStatus.Maintenance;
         _unitOfWork.Rooms.Update(room);

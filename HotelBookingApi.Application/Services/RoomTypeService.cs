@@ -1,12 +1,13 @@
+using AutoMapper;
+using HotelBookingApi.Application.DTOs;
+using HotelBookingApi.Application.Interfaces.Repositories;
+using HotelBookingApi.Application.Interfaces.Services;
+using HotelBookingApi.Domain.Entities;
+using HotelBookingApi.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using HotelBookingApi.Domain.Entities;
-using HotelBookingApi.Application.DTOs;
-using HotelBookingApi.Application.Interfaces.Repositories;
-using HotelBookingApi.Application.Interfaces.Services;
 
 namespace HotelBookingApi.Application.Services;
 
@@ -36,7 +37,7 @@ public class RoomTypeService : IRoomTypeService
     public async Task<Guid> CreateAsync(CreateOrUpdateRoomTypeDto dto, CancellationToken cancellationToken = default)
     {
         var isUnique = await _unitOfWork.RoomTypes.IsNameUniqueAsync(dto.Name);
-        if (!isUnique) throw new Exception("RoomType name must be unique");
+        if (!isUnique) throw new BadRequestException("RoomType name must be unique");
 
         var roomType = _mapper.Map<RoomType>(dto);
         await _unitOfWork.RoomTypes.AddAsync(roomType);
@@ -47,7 +48,7 @@ public class RoomTypeService : IRoomTypeService
     public async Task UpdateAsync(Guid id, CreateOrUpdateRoomTypeDto dto, CancellationToken cancellationToken = default)
     {
         var roomType = await _unitOfWork.RoomTypes.GetByIdAsync(id);
-        if (roomType == null) throw new Exception("RoomType not found");
+        if (roomType == null) throw new NotFoundException("RoomType not found");
 
         _mapper.Map(dto, roomType);
         _unitOfWork.RoomTypes.Update(roomType);

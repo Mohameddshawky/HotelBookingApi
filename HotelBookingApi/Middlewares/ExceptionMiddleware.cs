@@ -42,7 +42,7 @@ public class ExceptionMiddleware
         {
             NotFoundException => (int)HttpStatusCode.NotFound,
             BadRequestException => (int)HttpStatusCode.BadRequest,
-            DomainException => (int)HttpStatusCode.BadRequest,
+          
             _ => (int)HttpStatusCode.InternalServerError
         };
 

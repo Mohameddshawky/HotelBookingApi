@@ -1,15 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoMapper;
-using HotelBookingApi.Domain.Entities;
 using HotelBookingApi.Application.DTOs;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Interfaces.Services;
+using HotelBookingApi.Domain.Entities;
 using HotelBookingApi.Domain.Enums;
+using HotelBookingApi.Domain.Exceptions;
+using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace HotelBookingApi.Application.Services;
 
@@ -33,13 +34,13 @@ public class BookingService : IBookingService
             var isOverlapping = await _unitOfWork.Bookings.HasOverlappingBookingAsync(dto.RoomId, dto.CheckInDate, dto.CheckOutDate);
             if (isOverlapping)
             {
-                throw new Exception("Room is already booked for the selected dates.");
+                throw new BadRequestException("Room is already booked for the selected dates.");
             }
 
             var room = await _unitOfWork.Rooms.GetByIdAsync(dto.RoomId);
             if (room == null || room.Status == RoomStatus.Maintenance)
             {
-                throw new Exception("Room is not available.");
+                throw new BadRequestException("Room is not available.");
             }
 
             var guest = await _unitOfWork.Guests.GetByEmailAsync(dto.GuestEmail);
@@ -115,7 +116,7 @@ public class BookingService : IBookingService
     public async Task ConfirmAsync(Guid bookingId, CancellationToken cancellationToken = default)
     {
         var booking = await _unitOfWork.Bookings.GetByIdAsync(bookingId);
-        if (booking == null) throw new Exception("Booking not found");
+        if (booking == null) throw new NotFoundException("Booking not found");
 
         booking.Confirm(); // Uses State Pattern
         _unitOfWork.Bookings.Update(booking);
@@ -125,7 +126,7 @@ public class BookingService : IBookingService
     public async Task CancelAsync(Guid bookingId, CancellationToken cancellationToken = default)
     {
         var booking = await _unitOfWork.Bookings.GetByIdAsync(bookingId);
-        if (booking == null) throw new Exception("Booking not found");
+        if (booking == null) throw new NotFoundException("Booking not found");
 
         booking.Cancel(); // Uses State Pattern
         
@@ -166,7 +167,7 @@ public class BookingService : IBookingService
     public async Task CheckOutAsync(Guid bookingId, CancellationToken cancellationToken = default)
     {
         var booking = await _unitOfWork.Bookings.GetByIdAsync(bookingId);
-        if (booking == null) throw new Exception("Booking not found");
+        if (booking == null) throw new NotFoundException("Booking not found");
 
         var room = await _unitOfWork.Rooms.GetByIdAsync(booking.RoomId);
         if (room != null)

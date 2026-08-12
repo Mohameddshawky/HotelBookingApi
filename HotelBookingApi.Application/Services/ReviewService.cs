@@ -1,12 +1,13 @@
+using AutoMapper;
+using HotelBookingApi.Application.DTOs;
+using HotelBookingApi.Application.Interfaces.Repositories;
+using HotelBookingApi.Application.Interfaces.Services;
+using HotelBookingApi.Domain.Entities;
+using HotelBookingApi.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using HotelBookingApi.Domain.Entities;
-using HotelBookingApi.Application.DTOs;
-using HotelBookingApi.Application.Interfaces.Repositories;
-using HotelBookingApi.Application.Interfaces.Services;
 
 namespace HotelBookingApi.Application.Services;
 
@@ -30,10 +31,10 @@ public class ReviewService : IReviewService
     public async Task<Guid> CreateAsync(CreateOrUpdateReviewDto dto, CancellationToken cancellationToken = default)
     {
         var booking = await _unitOfWork.Bookings.GetByIdAsync(dto.BookingId);
-        if (booking == null) throw new Exception("Booking not found");
+        if (booking == null) throw new NotFoundException("Booking not found");
 
         var reviewExists = await _unitOfWork.Reviews.ExistsForBookingAsync(dto.BookingId);
-        if (reviewExists) throw new Exception("Review already exists for this booking");
+        if (reviewExists) throw new BadRequestException("Review already exists for this booking");
 
         var review = _mapper.Map<Review>(dto);
         await _unitOfWork.Reviews.AddAsync(review);

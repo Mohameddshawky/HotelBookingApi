@@ -1,12 +1,13 @@
+using AutoMapper;
+using HotelBookingApi.Application.DTOs;
+using HotelBookingApi.Application.Interfaces.Repositories;
+using HotelBookingApi.Application.Interfaces.Services;
+using HotelBookingApi.Domain.Entities;
+using HotelBookingApi.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using HotelBookingApi.Domain.Entities;
-using HotelBookingApi.Application.DTOs;
-using HotelBookingApi.Application.Interfaces.Repositories;
-using HotelBookingApi.Application.Interfaces.Services;
 
 namespace HotelBookingApi.Application.Services;
 
@@ -44,7 +45,7 @@ public class GuestService : IGuestService
     public async Task UpdateAsync(Guid id, CreateOrUpdateGuestDto dto, CancellationToken cancellationToken = default)
     {
         var guest = await _unitOfWork.Guests.GetByIdAsync(id);
-        if (guest == null) throw new Exception("Guest not found");
+        if (guest == null) throw new NotFoundException("Guest not found");
 
         _mapper.Map(dto, guest);
         _unitOfWork.Guests.Update(guest);

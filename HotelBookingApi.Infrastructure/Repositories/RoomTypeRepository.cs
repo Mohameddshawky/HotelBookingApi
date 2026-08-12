@@ -19,20 +19,5 @@ public class RoomTypeRepository : GenericRepository<RoomType>, IRoomTypeReposito
         return !await _dbSet.AnyAsync(rt => rt.Name == name);
     }
 
-    public async Task<RoomType?> GetRoomTypeWithAmenitiesAsync(Guid id)
-    {
-        return await _dbSet
-            .Include(rt => rt.RoomTypeAmenities)
-            .ThenInclude(rta => rta.Amenity)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(rt => rt.Id == id);
-    }
-
-    public async Task<RoomType?> GetRoomTypeWithRoomsAsync(Guid id)
-    {
-        return await _dbSet
-            .Include(rt => rt.Rooms)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(rt => rt.Id == id);
-    }
+   
 }
