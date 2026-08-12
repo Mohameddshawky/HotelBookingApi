@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Building2, 
   LogOut, 
+  LogIn,
   LayoutDashboard, 
   BedDouble, 
   Users, 
@@ -13,7 +14,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Layout() {
-  const { logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,16 +23,18 @@ export default function Layout() {
     navigate('/login');
   };
 
-  const navItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { name: 'Rooms', path: '/rooms', icon: BedDouble },
-    { name: 'Room Types', path: '/room-types', icon: BedDouble },
-    { name: 'Amenities', path: '/amenities', icon: Coffee },
-    { name: 'Guests', path: '/guests', icon: Users },
-    { name: 'Bookings', path: '/bookings', icon: CalendarRange },
-    { name: 'Reviews', path: '/reviews', icon: Star },
-    { name: 'Reports', path: '/reports', icon: BarChart },
+  const allNavItems = [
+    { name: 'Rooms', path: '/', icon: BedDouble, public: true },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, public: false },
+    { name: 'Room Types', path: '/room-types', icon: BedDouble, public: true },
+    { name: 'Amenities', path: '/amenities', icon: Coffee, public: true },
+    { name: 'Guests', path: '/guests', icon: Users, public: false },
+    { name: 'Bookings', path: '/bookings', icon: CalendarRange, public: false },
+    { name: 'Reviews', path: '/reviews', icon: Star, public: true },
+    { name: 'Reports', path: '/reports', icon: BarChart, public: false },
   ];
+
+  const navItems = allNavItems.filter(item => item.public || isAuthenticated);
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -62,13 +65,23 @@ export default function Layout() {
           })}
         </nav>
         <div className="p-4 border-t border-brand-800">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full text-left text-brand-100 hover:bg-brand-800 hover:text-white rounded-lg transition-colors"
-          >
-            <LogOut size={20} />
-            <span className="font-medium">Logout</span>
-          </button>
+          {isAuthenticated ? (
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3 w-full text-left text-brand-100 hover:bg-brand-800 hover:text-white rounded-lg transition-colors"
+            >
+              <LogOut size={20} />
+              <span className="font-medium">Logout</span>
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-3 px-4 py-3 w-full text-left text-brand-100 hover:bg-brand-800 hover:text-white rounded-lg transition-colors"
+            >
+              <LogIn size={20} />
+              <span className="font-medium">Sign In</span>
+            </Link>
+          )}
         </div>
       </aside>
 
@@ -76,7 +89,7 @@ export default function Layout() {
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white shadow-sm h-16 flex items-center px-8">
           <h2 className="text-xl font-semibold text-gray-800">
-            {navItems.find(item => location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path)))?.name || 'Dashboard'}
+            {navItems.find(item => location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path)))?.name || 'Grand Horizon'}
           </h2>
         </header>
         <div className="flex-1 overflow-auto p-8">

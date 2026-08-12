@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { amenitiesService, Amenity } from '../../services/amenities';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function AmenitiesList() {
     const [amenities, setAmenities] = useState<Amenity[]>([]);
     const [loading, setLoading] = useState(true);
+    const { isAuthenticated } = useAuth();
 
     const loadAmenities = async () => {
         try {
@@ -39,9 +41,11 @@ export default function AmenitiesList() {
         <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">All Amenities</h3>
-                <Link to="/amenities/new" className="bg-brand-600 text-white px-4 py-2 rounded-md hover:bg-brand-700 flex items-center gap-2">
-                    <Plus size={18} /> Add Amenity
-                </Link>
+                {isAuthenticated && (
+                    <Link to="/amenities/new" className="bg-brand-600 text-white px-4 py-2 rounded-md hover:bg-brand-700 flex items-center gap-2">
+                        <Plus size={18} /> Add Amenity
+                    </Link>
+                )}
             </div>
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -49,7 +53,9 @@ export default function AmenitiesList() {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            {isAuthenticated && (
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            )}
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -57,16 +63,18 @@ export default function AmenitiesList() {
                             <tr key={amenity.id}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{amenity.name}</td>
                                 <td className="px-6 py-4 text-sm text-gray-500">{amenity.description}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div className="flex justify-end gap-3">
-                                        <Link to={`/amenities/${amenity.id}`} className="text-blue-600 hover:text-blue-900">
-                                            <Edit size={18} />
-                                        </Link>
-                                        <button onClick={() => handleDelete(amenity.id)} className="text-red-600 hover:text-red-900">
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </td>
+                                {isAuthenticated && (
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div className="flex justify-end gap-3">
+                                            <Link to={`/amenities/${amenity.id}`} className="text-blue-600 hover:text-blue-900">
+                                                <Edit size={18} />
+                                            </Link>
+                                            <button onClick={() => handleDelete(amenity.id)} className="text-red-600 hover:text-red-900">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

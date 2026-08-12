@@ -26,21 +26,22 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="amenities" element={<AmenitiesList />} />
+          <Route path="/" element={<Layout />}>
+            <Route index element={<RoomsList />} />
+            <Route path="amenities" element={<AmenitiesList />} />
+            <Route path="room-types" element={<RoomTypesList />} />
+            <Route path="reviews" element={<ReviewsList />} />
+            <Route path="reviews/new" element={<ReviewForm />} />
+            <Route path="bookings/new" element={<BookingForm />} />
+            
+            <Route element={<ProtectedRoute />}>
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="amenities/:id" element={<AmenityForm />} />
-              <Route path="room-types" element={<RoomTypesList />} />
               <Route path="room-types/:id" element={<RoomTypeForm />} />
-              <Route path="rooms" element={<RoomsList />} />
               <Route path="rooms/new" element={<RoomForm />} />
               <Route path="guests" element={<GuestsList />} />
               <Route path="guests/:id" element={<GuestForm />} />
               <Route path="bookings" element={<BookingsList />} />
-              <Route path="bookings/new" element={<BookingForm />} />
-              <Route path="reviews" element={<ReviewsList />} />
-              <Route path="reviews/new" element={<ReviewForm />} />
               <Route path="reports" element={<Dashboard />} />
               {/* Other CRUD routes will go here */}
             </Route>

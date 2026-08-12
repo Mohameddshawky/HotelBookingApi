@@ -21,7 +21,7 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
         return await _dbSet
             .Include(r => r.RoomType)
             .AsNoTracking()
-            .Where(r => r.Status == RoomStatus.Available && 
+            .Where(r => r.Status != RoomStatus.Maintenance && 
                         !r.Bookings.Any(b => b.Status != BookingStatus.Cancelled &&
                                              b.CheckInDate < checkOut && b.CheckOutDate > checkIn))
             .ToListAsync();

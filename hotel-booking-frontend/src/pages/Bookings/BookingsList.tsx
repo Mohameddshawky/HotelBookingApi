@@ -39,24 +39,28 @@ export default function BookingsList() {
         }
     };
 
-    const getStatusText = (status: number) => {
-        switch (status) {
-            case 0: return 'Pending';
-            case 1: return 'Confirmed';
-            case 2: return 'Cancelled';
-            case 3: return 'CheckedIn';
-            case 4: return 'CheckedOut';
-            default: return 'Unknown';
+    const getStatusText = (status: string | number) => {
+        if (typeof status === 'number') {
+            switch (status) {
+                case 0: return 'Pending';
+                case 1: return 'Confirmed';
+                case 2: return 'Cancelled';
+                case 3: return 'CheckedIn';
+                case 4: return 'CheckedOut';
+                default: return 'Unknown';
+            }
         }
+        return status;
     };
 
-    const getStatusColor = (status: number) => {
-        switch (status) {
-            case 0: return 'bg-yellow-100 text-yellow-800';
-            case 1: return 'bg-blue-100 text-blue-800';
-            case 2: return 'bg-red-100 text-red-800';
-            case 3: return 'bg-green-100 text-green-800';
-            case 4: return 'bg-gray-100 text-gray-800';
+    const getStatusColor = (status: string | number) => {
+        const statusStr = typeof status === 'number' ? getStatusText(status) : status;
+        switch (statusStr) {
+            case 'Pending': return 'bg-yellow-100 text-yellow-800';
+            case 'Confirmed': return 'bg-blue-100 text-blue-800';
+            case 'Cancelled': return 'bg-red-100 text-red-800';
+            case 'CheckedIn': return 'bg-green-100 text-green-800';
+            case 'CheckedOut': return 'bg-gray-100 text-gray-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     };
@@ -113,16 +117,16 @@ export default function BookingsList() {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex justify-end gap-2">
-                                            {b.status === 0 && (
+                                            {(b.status === 0 || b.status === 'Pending') && (
                                                 <>
                                                     <button onClick={() => handleAction(b.id, 'confirm')} className="text-blue-600 hover:text-blue-900" title="Confirm"><CheckCircle size={18} /></button>
                                                     <button onClick={() => handleAction(b.id, 'cancel')} className="text-red-600 hover:text-red-900" title="Cancel"><XCircle size={18} /></button>
                                                 </>
                                             )}
-                                            {b.status === 1 && (
+                                            {(b.status === 1 || b.status === 'Confirmed') && (
                                                 <button onClick={() => handleAction(b.id, 'checkIn')} className="text-green-600 hover:text-green-900" title="Check In"><LogIn size={18} /></button>
                                             )}
-                                            {b.status === 3 && (
+                                            {(b.status === 3 || b.status === 'CheckedIn') && (
                                                 <button onClick={() => handleAction(b.id, 'checkOut')} className="text-gray-600 hover:text-gray-900" title="Check Out"><LogOut size={18} /></button>
                                             )}
                                         </div>
