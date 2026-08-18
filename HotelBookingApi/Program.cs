@@ -1,11 +1,14 @@
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Interfaces.Services;
+using HotelBookingApi.Application.Interfaces.Notifications;
 using HotelBookingApi.Application.Mappings;
 using HotelBookingApi.Application.Services;
 using HotelBookingApi.Domain.Entities;
 using HotelBookingApi.Infrastructure.Data;
+using HotelBookingApi.Infrastructure.Configuration;
 using HotelBookingApi.Infrastructure.Repositories;
 using HotelBookingApi.Infrastructure.Services;
+using HotelBookingApi.Infrastructure.Notifications;
 using HotelBookingApi.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -20,6 +23,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Configuration
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 
 // CORS Policy
 builder.Services.AddCors(options =>
@@ -50,6 +56,9 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Notifications
+builder.Services.AddScoped<INotificationStrategy, EmailNotificationStrategy>();
 
 // Identity
 builder.Services.AddIdentity<Staff, IdentityRole>()

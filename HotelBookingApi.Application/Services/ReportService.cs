@@ -34,8 +34,7 @@ public class ReportService : IReportService
         var totalRooms = rooms.Count();
         
         var activeBookings = await _unitOfWork.Bookings.GetActiveBookingsAsync();
-        // Since GetActiveBookingsAsync gets Confirmed and CheckedIn, real occupancy is technically CheckedIn.
-        // Let's assume occupied = currently CheckedIn
+    
         var occupiedRooms = activeBookings.Count(b => b.Status == Domain.Enums.BookingStatus.CheckedIn);
 
         return new OccupancyReportDto

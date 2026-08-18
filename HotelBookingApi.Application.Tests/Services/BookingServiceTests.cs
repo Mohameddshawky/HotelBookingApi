@@ -1,9 +1,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using AutoMapper;
 using FluentAssertions;
 using HotelBookingApi.Application.DTOs;
+using HotelBookingApi.Application.Interfaces.Notifications;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Services;
 using HotelBookingApi.Domain.Entities;
@@ -22,7 +25,8 @@ public class BookingServiceTests
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockMapper = new Mock<IMapper>();
-        _sut = new BookingService(_mockUnitOfWork.Object, _mockMapper.Object);
+        var strategies = new List<INotificationStrategy>();
+        _sut = new BookingService(_mockUnitOfWork.Object, _mockMapper.Object, strategies);
     }
 
     [Fact]

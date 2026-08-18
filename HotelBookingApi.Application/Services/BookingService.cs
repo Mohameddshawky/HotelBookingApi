@@ -2,6 +2,7 @@ using AutoMapper;
 using HotelBookingApi.Application.DTOs;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Interfaces.Services;
+using HotelBookingApi.Application.Interfaces.Notifications;
 using HotelBookingApi.Domain.Entities;
 using HotelBookingApi.Domain.Enums;
 using HotelBookingApi.Domain.Exceptions;
@@ -18,11 +19,13 @@ public class BookingService : IBookingService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IEnumerable<INotificationStrategy> _notificationStrategies;
 
-    public BookingService(IUnitOfWork unitOfWork, IMapper mapper)
+    public BookingService(IUnitOfWork unitOfWork, IMapper mapper, IEnumerable<INotificationStrategy> notificationStrategies)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _notificationStrategies = notificationStrategies;
     }
 
     public async Task<BookingDetailsDto> CreateAsync(CreateOrUpdateBookingDto dto, CancellationToken cancellationToken = default)
@@ -115,34 +118,74 @@ public class BookingService : IBookingService
 
     public async Task ConfirmAsync(Guid bookingId, CancellationToken cancellationToken = default)
     {
-        var booking = await _unitOfWork.Bookings.GetByIdAsync(bookingId);
-        if (booking == null) throw new NotFoundException("Booking not found");
+        await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        try
+        {
+            var booking = await _unitOfWork.Bookings.GetByIdAsync(bookingId);
+            if (booking == null) throw new NotFoundException("Booking not found");
 
-        booking.Confirm(); // Uses State Pattern
-        _unitOfWork.Bookings.Update(booking);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            booking.Confirm(); // Uses State Pattern
+            _unitOfWork.Bookings.Update(booking);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var guest = await _unitOfWork.Guests.GetByIdAsync(booking.GuestId);
+            if (guest != null)
+            {
+                foreach (var strategy in _notificationStrategies)
+                {
+                    await strategy.SendBookingConfirmedAsync(booking, guest, cancellationToken);
+                }
+            }
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task CancelAsync(Guid bookingId, CancellationToken cancellationToken = default)
     {
-        var booking = await _unitOfWork.Bookings.GetByIdAsync(bookingId);
-        if (booking == null) throw new NotFoundException("Booking not found");
-
-        booking.Cancel(); // Uses State Pattern
-        
-        // If they cancelled a checked-in booking (which shouldn't happen per state pattern, but if they did)
-        if (booking.RoomId != Guid.Empty)
+        await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        try
         {
-            var room = await _unitOfWork.Rooms.GetByIdAsync(booking.RoomId);
-            if (room != null && room.Status == RoomStatus.Occupied)
-            {
-                room.Status = RoomStatus.Available;
-                _unitOfWork.Rooms.Update(room);
-            }
-        }
+            var booking = await _unitOfWork.Bookings.GetByIdAsync(bookingId);
+            if (booking == null) throw new NotFoundException("Booking not found");
 
-        _unitOfWork.Bookings.Update(booking);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            booking.Cancel(); // Uses State Pattern
+            
+            // If they cancelled a checked-in booking (which shouldn't happen per state pattern, but if they did)
+            if (booking.RoomId != Guid.Empty)
+            {
+                var room = await _unitOfWork.Rooms.GetByIdAsync(booking.RoomId);
+                if (room != null && room.Status == RoomStatus.Occupied)
+                {
+                    room.Status = RoomStatus.Available;
+                    _unitOfWork.Rooms.Update(room);
+                }
+            }
+
+            _unitOfWork.Bookings.Update(booking);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var guest = await _unitOfWork.Guests.GetByIdAsync(booking.GuestId);
+            if (guest != null)
+            {
+                foreach (var strategy in _notificationStrategies)
+                {
+                    await strategy.SendBookingCancelledAsync(booking, guest, cancellationToken);
+                }
+            }
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task CheckInAsync(Guid bookingId, CancellationToken cancellationToken = default)
