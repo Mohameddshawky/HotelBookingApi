@@ -3,6 +3,7 @@ using HotelBookingApi.Application.Interfaces.Services;
 using HotelBookingApi.Application.Interfaces.Notifications;
 using HotelBookingApi.Application.Mappings;
 using HotelBookingApi.Application.Services;
+using HotelBookingApi.Application.Strategies.Sorting;
 using HotelBookingApi.Domain.Entities;
 using HotelBookingApi.Infrastructure.Data;
 using HotelBookingApi.Infrastructure.Configuration;
@@ -56,6 +57,12 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Sorting Strategies
+builder.Services.AddScoped<IRoomSortStrategy, SortByPriceStrategy>();
+builder.Services.AddScoped<IRoomSortStrategy, SortByNameStrategy>();
+builder.Services.AddScoped<IRoomSortStrategy, SortByRatingStrategy>();
+builder.Services.AddScoped<RoomSortStrategyFactory>();
 
 // Notifications
 builder.Services.AddScoped<INotificationStrategy, EmailNotificationStrategy>();

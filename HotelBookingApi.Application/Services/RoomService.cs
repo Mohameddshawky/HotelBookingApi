@@ -2,6 +2,7 @@ using AutoMapper;
 using HotelBookingApi.Application.DTOs;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Interfaces.Services;
+using HotelBookingApi.Application.Strategies.Sorting;
 using HotelBookingApi.Domain.Entities;
 using HotelBookingApi.Domain.Enums;
 using HotelBookingApi.Domain.Exceptions;
@@ -16,16 +17,19 @@ public class RoomService : IRoomService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly RoomSortStrategyFactory _sortFactory;
 
-    public RoomService(IUnitOfWork unitOfWork, IMapper mapper)
+    public RoomService(IUnitOfWork unitOfWork, IMapper mapper, RoomSortStrategyFactory sortFactory)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _sortFactory = sortFactory;
     }
 
-    public async Task<PagedResult<RoomDto>> GetAllAsync(int pageNumber, int pageSize, Guid? roomTypeId = null, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<RoomDto>> GetAllAsync(int pageNumber, int pageSize, Guid? roomTypeId = null, string? sortBy = null, CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await _unitOfWork.Rooms.GetPagedRoomsAsync(pageNumber, pageSize, roomTypeId);
+        var strategy = _sortFactory.GetStrategy(sortBy);
+        var (items, totalCount) = await _unitOfWork.Rooms.GetPagedRoomsAsync(pageNumber, pageSize, roomTypeId, strategy);
         
         return new PagedResult<RoomDto>
         {

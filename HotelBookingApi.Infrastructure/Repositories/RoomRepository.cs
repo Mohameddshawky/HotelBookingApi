@@ -7,6 +7,7 @@ using HotelBookingApi.Domain.Entities;
 using HotelBookingApi.Domain.Enums;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Infrastructure.Data;
+using HotelBookingApi.Application.Strategies.Sorting;
 
 namespace HotelBookingApi.Infrastructure.Repositories;
 
@@ -37,13 +38,18 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
         return await _dbSet.AsNoTracking().Where(r => r.RoomTypeId == roomTypeId).ToListAsync();
     }
 
-    public async Task<(IEnumerable<Room> Items, int TotalCount)> GetPagedRoomsAsync(int pageNumber, int pageSize, Guid? roomTypeId = null)
+    public async Task<(IEnumerable<Room> Items, int TotalCount)> GetPagedRoomsAsync(int pageNumber, int pageSize, Guid? roomTypeId = null, IRoomSortStrategy? sortStrategy = null)
     {
         var query = _dbSet.Include(r => r.RoomType).AsNoTracking();
 
         if (roomTypeId.HasValue)
         {
             query = query.Where(r => r.RoomTypeId == roomTypeId.Value);
+        }
+
+        if (sortStrategy != null)
+        {
+            query = sortStrategy.ApplySort(query);
         }
 
         var totalCount = await query.CountAsync();

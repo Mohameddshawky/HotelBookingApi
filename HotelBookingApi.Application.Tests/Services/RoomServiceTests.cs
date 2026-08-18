@@ -6,6 +6,8 @@ using FluentAssertions;
 using HotelBookingApi.Application.DTOs;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Services;
+using HotelBookingApi.Application.Strategies.Sorting;
+using System.Collections.Generic;
 using HotelBookingApi.Domain.Entities;
 using Moq;
 using Xunit;
@@ -22,7 +24,8 @@ public class RoomServiceTests
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockMapper = new Mock<IMapper>();
-        _sut = new RoomService(_mockUnitOfWork.Object, _mockMapper.Object);
+        var factory = new RoomSortStrategyFactory(new List<IRoomSortStrategy>());
+        _sut = new RoomService(_mockUnitOfWork.Object, _mockMapper.Object, factory);
     }
 
     [Fact]

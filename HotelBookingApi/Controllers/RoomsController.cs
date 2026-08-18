@@ -24,9 +24,10 @@ public class RoomsController : ControllerBase
         [FromQuery] int pageNumber = 1, 
         [FromQuery] int pageSize = 10, 
         [FromQuery] Guid? roomTypeId = null, 
+        [FromQuery] string? sortBy = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await _roomService.GetAllAsync(pageNumber, pageSize, roomTypeId, cancellationToken);
+        var result = await _roomService.GetAllAsync(pageNumber, pageSize, roomTypeId, sortBy, cancellationToken);
         return Ok(result);
     }
 
