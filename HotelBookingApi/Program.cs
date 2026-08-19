@@ -17,6 +17,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using HotelBookingApi.Features.Bookings.CreateBooking;
+using HotelBookingApi.Features.Bookings.GetBookingById;
+using HotelBookingApi.Features.Bookings.GetAllBookings;
+using HotelBookingApi.Features.Bookings.GetGuestBookings;
+using HotelBookingApi.Features.Bookings.GetGuestBookingsByEmail;
+using HotelBookingApi.Features.Bookings.ConfirmBooking;
+using HotelBookingApi.Features.Bookings.CancelBooking;
+using HotelBookingApi.Features.Bookings.CheckInBooking;
+using HotelBookingApi.Features.Bookings.CheckOutBooking;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,7 +59,16 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Services
 builder.Services.AddScoped<IAmenityService, AmenityService>();
-builder.Services.AddScoped<IBookingService, BookingService>();
+// Bookings VSA Handlers
+builder.Services.AddScoped<CreateBookingHandler>();
+builder.Services.AddScoped<GetBookingByIdHandler>();
+builder.Services.AddScoped<GetAllBookingsHandler>();
+builder.Services.AddScoped<GetGuestBookingsHandler>();
+builder.Services.AddScoped<GetGuestBookingsByEmailHandler>();
+builder.Services.AddScoped<ConfirmBookingHandler>();
+builder.Services.AddScoped<CancelBookingHandler>();
+builder.Services.AddScoped<CheckInBookingHandler>();
+builder.Services.AddScoped<CheckOutBookingHandler>();
 builder.Services.AddScoped<IGuestService, GuestService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
@@ -181,5 +199,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// Bookings VSA Endpoints
+HotelBookingApi.Features.Bookings.CreateBooking.CreateBookingEndpoint.MapEndpoint(app);
+HotelBookingApi.Features.Bookings.GetBookingById.GetBookingByIdEndpoint.MapEndpoint(app);
+HotelBookingApi.Features.Bookings.GetAllBookings.GetAllBookingsEndpoint.MapEndpoint(app);
+HotelBookingApi.Features.Bookings.GetGuestBookings.GetGuestBookingsEndpoint.MapEndpoint(app);
+HotelBookingApi.Features.Bookings.GetGuestBookingsByEmail.GetGuestBookingsByEmailEndpoint.MapEndpoint(app);
+HotelBookingApi.Features.Bookings.ConfirmBooking.ConfirmBookingEndpoint.MapEndpoint(app);
+HotelBookingApi.Features.Bookings.CancelBooking.CancelBookingEndpoint.MapEndpoint(app);
+HotelBookingApi.Features.Bookings.CheckInBooking.CheckInBookingEndpoint.MapEndpoint(app);
+HotelBookingApi.Features.Bookings.CheckOutBooking.CheckOutBookingEndpoint.MapEndpoint(app);
 
 app.Run();
