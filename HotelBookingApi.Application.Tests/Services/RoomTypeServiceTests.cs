@@ -7,6 +7,7 @@ using HotelBookingApi.Application.DTOs;
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Services;
 using HotelBookingApi.Domain.Entities;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Xunit;
 
@@ -22,7 +23,8 @@ public class RoomTypeServiceTests
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockMapper = new Mock<IMapper>();
-        _sut = new RoomTypeService(_mockUnitOfWork.Object, _mockMapper.Object);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        _sut = new RoomTypeService(_mockUnitOfWork.Object, _mockMapper.Object, cache);
     }
 
     [Fact]

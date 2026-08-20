@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace HotelBookingApi.Application.Services;
 
@@ -15,17 +16,32 @@ public class RoomTypeService : IRoomTypeService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IMemoryCache _cache;
+    private const string CacheKey = "RoomTypes_All";
 
-    public RoomTypeService(IUnitOfWork unitOfWork, IMapper mapper)
+    public RoomTypeService(IUnitOfWork unitOfWork, IMapper mapper, IMemoryCache cache)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _cache = cache;
     }
 
     public async Task<IEnumerable<RoomTypeDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var roomTypes = await _unitOfWork.RoomTypes.GetAllAsync();
-        return _mapper.Map<IEnumerable<RoomTypeDto>>(roomTypes);
+        if (!_cache.TryGetValue(CacheKey, out IEnumerable<RoomTypeDto>? cachedRoomTypes))
+        {
+            var roomTypes = await _unitOfWork.RoomTypes.GetAllAsync();
+            cachedRoomTypes = _mapper.Map<IEnumerable<RoomTypeDto>>(roomTypes);
+
+            var cacheEntryOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+            };
+
+            _cache.Set(CacheKey, cachedRoomTypes, cacheEntryOptions);
+        }
+
+        return cachedRoomTypes!;
     }
 
     public async Task<RoomTypeDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -42,6 +58,9 @@ public class RoomTypeService : IRoomTypeService
         var roomType = _mapper.Map<RoomType>(dto);
         await _unitOfWork.RoomTypes.AddAsync(roomType);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        _cache.Remove(CacheKey);
+        
         return roomType.Id;
     }
 
@@ -53,5 +72,7 @@ public class RoomTypeService : IRoomTypeService
         _mapper.Map(dto, roomType);
         _unitOfWork.RoomTypes.Update(roomType);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        _cache.Remove(CacheKey);
     }
 }
