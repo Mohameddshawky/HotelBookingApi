@@ -1,5 +1,7 @@
 using HotelBookingApi.Application.Interfaces.Repositories;
 using HotelBookingApi.Application.Interfaces.Services;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using HotelBookingApi.Application.Interfaces.Notifications;
 using HotelBookingApi.Application.Mappings;
 using HotelBookingApi.Application.Services;
@@ -11,6 +13,11 @@ using HotelBookingApi.Infrastructure.Repositories;
 using HotelBookingApi.Infrastructure.Services;
 using HotelBookingApi.Infrastructure.Notifications;
 using HotelBookingApi.Middlewares;
+using HotelBookingApi.Infrastructure.HealthChecks;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Hangfire;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +41,60 @@ builder.Services.AddMemoryCache();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Health Checks
+builder.Services.AddHealthChecks()
+    .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "Database")
+    .AddCheck<SmtpHealthCheck>("SMTP");
+
+// Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = (context, token) =>
+    {
+        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+        var ip = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        logger.LogWarning("Rate limit exceeded for IP: {IpAddress}. Path: {Path}", ip, context.HttpContext.Request.Path);
+        
+        return new ValueTask();
+    };
+
+    options.AddPolicy("AuthLimit", context =>
+    {
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetSlidingWindowLimiter(ip, _ =>
+            new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 6,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
+    });
+
+    options.AddPolicy("ReportLimit", context =>
+    {
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetConcurrencyLimiter(ip, _ =>
+            new ConcurrencyLimiterOptions
+            {
+                PermitLimit = 2,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
+    });
+});
+
+// Hangfire
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfireServer();
 
 // Configuration
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
@@ -85,6 +146,7 @@ builder.Services.AddScoped<RoomSortStrategyFactory>();
 
 // Notifications
 builder.Services.AddScoped<INotificationStrategy, EmailNotificationStrategy>();
+builder.Services.AddScoped<IBackgroundNotificationService, BackgroundNotificationService>();
 
 // Identity
 builder.Services.AddIdentity<Staff, IdentityRole>()
@@ -160,6 +222,8 @@ app.UseCors("AllowAll");
 
 app.UseMiddleware<ExceptionMiddleware>();
 
+app.UseHangfireDashboard("/hangfire");
+
 // Seed Default Roles and Admin User
 using (var scope = app.Services.CreateScope())
 {
@@ -196,6 +260,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -210,5 +276,28 @@ HotelBookingApi.Features.Bookings.ConfirmBooking.ConfirmBookingEndpoint.MapEndpo
 HotelBookingApi.Features.Bookings.CancelBooking.CancelBookingEndpoint.MapEndpoint(app);
 HotelBookingApi.Features.Bookings.CheckInBooking.CheckInBookingEndpoint.MapEndpoint(app);
 HotelBookingApi.Features.Bookings.CheckOutBooking.CheckOutBookingEndpoint.MapEndpoint(app);
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+            Status = report.Status.ToString(),
+            TotalDuration = report.TotalDuration,
+            Dependencies = report.Entries.Select(e => new
+            {
+                Name = e.Key,
+                Status = e.Value.Status.ToString(),
+                Description = e.Value.Description,
+                Duration = e.Value.Duration
+            })
+        };
+        await JsonSerializer.SerializeAsync(context.Response.Body, response);
+    }
+})
+.WithMetadata(new HttpMethodMetadata(new[] { "GET" }))
+.WithTags("Health");
 
 app.Run();

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using HotelBookingApi.Application.DTOs.Auth;
+using Microsoft.AspNetCore.RateLimiting;
 using HotelBookingApi.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,6 +30,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("AuthLimit")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         var result = await _authService.LoginAsync(dto);

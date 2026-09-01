@@ -34,13 +34,7 @@ public class ReportService : IReportService
 
     public async Task<OccupancyReportDto> GetOccupancyReportAsync(CancellationToken cancellationToken = default)
     {
-        // Decision: Using a short expiration only (5 minutes) instead of manual invalidation.
-        // Justification: The occupancy report aggregates data across all rooms and active bookings.
-        // It can be affected by numerous write paths: creating/deactivating rooms, making new bookings,
-        // and checking in/out guests. Manually invalidating the cache across all these disparate 
-        // handlers and services adds immense coupling and complexity. A 5-minute cache provides a massive 
-        // reduction in DB load for this heavy query while keeping the staleness window acceptable for a 
-        // general managerial report.
+        
         if (!_cache.TryGetValue(OccupancyCacheKey, out OccupancyReportDto? report))
         {
             var rooms = await _unitOfWork.Rooms.GetAllAsync();

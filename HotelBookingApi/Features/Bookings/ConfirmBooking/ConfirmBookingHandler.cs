@@ -1,7 +1,8 @@
-using HotelBookingApi.Application.Interfaces.Notifications;
 using HotelBookingApi.Application.Interfaces.Repositories;
+using HotelBookingApi.Application.Interfaces.Services;
 using HotelBookingApi.Domain.Exceptions;
-using System.Collections.Generic;
+using Hangfire;
+using System;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,12 +12,12 @@ namespace HotelBookingApi.Features.Bookings.ConfirmBooking;
 public class ConfirmBookingHandler
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IEnumerable<INotificationStrategy> _notificationStrategies;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
-    public ConfirmBookingHandler(IUnitOfWork unitOfWork, IEnumerable<INotificationStrategy> notificationStrategies)
+    public ConfirmBookingHandler(IUnitOfWork unitOfWork, IBackgroundJobClient backgroundJobClient)
     {
         _unitOfWork = unitOfWork;
-        _notificationStrategies = notificationStrategies;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     public async Task Handle(ConfirmBookingCommand command, CancellationToken cancellationToken)
@@ -31,14 +32,11 @@ public class ConfirmBookingHandler
             _unitOfWork.Bookings.Update(booking);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var guest = await _unitOfWork.Guests.GetByIdAsync(booking.GuestId);
-            if (guest != null)
-            {
-                foreach (var strategy in _notificationStrategies)
-                {
-                    await strategy.SendBookingConfirmedAsync(booking, guest, cancellationToken);
-                }
-            }
+            // Enqueue immediate confirmation email
+            _backgroundJobClient.Enqueue<IBackgroundNotificationService>(service => service.SendConfirmationEmailAsync(booking.Id));
+
+            // Schedule check-in reminder for 30 seconds from now (for testing Gotcha #2)
+            _backgroundJobClient.Schedule<IBackgroundNotificationService>(service => service.SendCheckInReminderAsync(booking.Id), TimeSpan.FromSeconds(30));
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }

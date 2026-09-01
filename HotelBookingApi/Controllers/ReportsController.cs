@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.Tasks;
 using HotelBookingApi.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +26,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpGet("occupancy")]
+    [EnableRateLimiting("ReportLimit")]
     public async Task<IActionResult> GetOccupancyReport(CancellationToken cancellationToken)
     {
         var result = await _reportService.GetOccupancyReportAsync(cancellationToken);
